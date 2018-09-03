@@ -16584,6 +16584,8 @@ Called by update_net_error_codes.py.-->
   <int value="1270" label="ENTERPRISEREPORTINGPRIVATE_GETDEVICEID"/>
   <int value="1271"
       label="ENTERPRISE_HARDWAREPLATFORM_GETHARDWAREPLATFORMINFO"/>
+  <int value="1272"
+      label="FILEMANAGERPRIVATEINTERNAL_SHAREPATHWITHCROSTINICONTAINER"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -19929,6 +19931,8 @@ Called by update_net_error_codes.py.-->
   <int value="2534" label="CacheStorageAddAllSuccessWithDuplicate"/>
   <int value="2535" label="LegendDelegateFocusOrAccessKey"/>
   <int value="2536" label="FeaturePolicyReport"/>
+  <int value="2537" label="V8Window_WebkitRTCPeerConnection_ConstructorGetter"/>
+  <int value="2538" label="V8Window_WebkitMediaStream_ConstructorGetter"/>
 </enum>
 
 <enum name="FeedbackSource">
@@ -37190,6 +37194,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="12" label="Generation triggered by autocomplete attributes"/>
   <int value="13" label="Generation item in the context menu accepted"/>
   <int value="14" label="Generation item in the context menu shown"/>
+  <int value="15" label="Generated password deleted by autofilling"/>
 </enum>
 
 <enum name="PasswordGenerationUserEvent">

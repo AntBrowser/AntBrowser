@@ -131,6 +131,7 @@ class ArcInputMethodManagerService::TabletModeObserver
 
   void OnTabletModeToggled(bool enabled) override {
     owner_->SetArcIMEAllowed(enabled);
+    owner_->NotifyInputMethodManagerObservers(enabled);
   }
 
  private:
@@ -300,6 +301,19 @@ void ArcInputMethodManagerService::ImeMenuListChanged() {
         return chromeos::extension_ime_util::IsArcIME(id);
       });
 
+  // TODO(yhanada|yusukes): Instead of observing ImeMenuListChanged(), it's
+  // probably better to just observe the pref (and not disabling ones still
+  // in the prefs.) See also the comment below in the second for-loop.
+  std::set<std::string> active_ime_ids_on_prefs;
+  {
+    const std::string active_ime_ids =
+        profile_->GetPrefs()->GetString(prefs::kLanguageEnabledImes);
+    std::vector<base::StringPiece> active_ime_list = base::SplitStringPiece(
+        active_ime_ids, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    for (const auto& id : active_ime_list)
+      active_ime_ids_on_prefs.insert(id.as_string());
+  }
+
   for (const auto& id : new_arc_active_ime_ids) {
     // Enable the IME which is not currently enabled.
     if (!active_arc_ime_ids_.count(id))
@@ -307,9 +321,22 @@ void ArcInputMethodManagerService::ImeMenuListChanged() {
   }
 
   for (const auto& id : active_arc_ime_ids_) {
-    // Disable the IME which is currently enabled.
-    if (!new_arc_active_ime_ids.count(id))
+    if (!new_arc_active_ime_ids.count(id) &&
+        !active_ime_ids_on_prefs.count(id)) {
+      // This path is taken in the following two cases:
+      // 1) The device is in tablet mode, and the user disabled the IME via
+      //    chrome://settings.
+      // 2) The device was just switched to laptop mode, and this service
+      //    disallowed Android IMEs.
+      // In the former case, |active_ime_ids_on_prefs| doesn't have the IME,
+      // but in the latter case, the set still has it. Here, disable the IME
+      // only for the former case so that the temporary deactivation of the
+      // IME on laptop mode wouldn't be propagated to the container. Otherwise,
+      // the IME confirmation dialog will be shown again next time when you
+      // use the IME in tablet mode.
+      // TODO(yhanada|yusukes): Only observe the prefs and remove the hack.
       EnableIme(id, false /* enable */);
+    }
   }
   active_arc_ime_ids_.swap(new_arc_active_ime_ids);
 }
@@ -425,6 +452,7 @@ void ArcInputMethodManagerService::SetArcIMEAllowed(bool allowed) {
                           installed_extensions.end());
   }
 
+  std::vector<std::string> ime_ids_to_enable;
   if (allowed) {
     if (!allowed_method_ids_set.empty()) {
       // Some IMEs are not allowed now. Add ARC IMEs to
@@ -435,7 +463,15 @@ void ArcInputMethodManagerService::SetArcIMEAllowed(bool allowed) {
       }
     }
 
-    // TODO(yhanada): Re-enable ARC IMEs that was enabled before disallowed.
+    // Re-enable ARC IMEs that were auto-disabled when toggling to laptop mode.
+    const std::string active_ime_ids =
+        profile_->GetPrefs()->GetString(prefs::kLanguageEnabledImes);
+    std::vector<base::StringPiece> active_ime_list = base::SplitStringPiece(
+        active_ime_ids, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    for (const auto& id : active_ime_list) {
+      if (chromeos::extension_ime_util::IsArcIME(id.as_string()))
+        ime_ids_to_enable.push_back(id.as_string());
+    }
   } else {
     // Disallow Arc IMEs.
     if (allowed_method_ids_set.empty()) {
@@ -458,6 +494,30 @@ void ArcInputMethodManagerService::SetArcIMEAllowed(bool allowed) {
       std::vector<std::string>(allowed_method_ids_set.begin(),
                                allowed_method_ids_set.end()),
       false /* enable_allowed_input_methods */);
+
+  // This has to be called after SetAllowedInputMethods() because enabling an
+  // IME that is disallowed always fails.
+  for (const auto& id : ime_ids_to_enable)
+    manager->GetActiveIMEState()->EnableInputMethod(id);
+}
+
+void ArcInputMethodManagerService::NotifyInputMethodManagerObservers(
+    bool is_tablet_mode) {
+  // Togging the mode may enable or disable all the ARC IMEs. To dynamically
+  // reflect the potential state changes to chrome://settings, notify the
+  // manager's observers here.
+  // TODO(yusukes): This is a temporary workaround for supporting ARC IMEs
+  // and supports neither Chrome OS extensions nor state changes enforced by
+  // the policy. The better way to do this is to add a dedicated event to
+  // language_settings_private.idl and send the new event to the JS side
+  // instead.
+  auto* manager = chromeos::input_method::InputMethodManager::Get();
+  if (!manager)
+    return;
+  if (is_tablet_mode)
+    manager->NotifyInputMethodExtensionRemoved(proxy_ime_extension_id_);
+  else
+    manager->NotifyInputMethodExtensionAdded(proxy_ime_extension_id_);
 }
 
 }  // namespace arc

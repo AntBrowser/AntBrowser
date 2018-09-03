@@ -2710,6 +2710,7 @@ crbug.com/875622 external/wpt/css/css-transitions/CSSTransition-startTime.tentat
 crbug.com/875249 external/wpt/infrastructure/testdriver/bless.html [ Timeout Pass ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-overflow.html [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/floats/float-nowrap-9.html [ Failure ]
 crbug.com/626703 virtual/layout_ng/external/wpt/css/CSS2/floats/float-nowrap-8.html [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/floats/float-nowrap-3.html [ Failure ]
@@ -5030,3 +5031,6 @@ crbug.com/877183 [ Linux Win ] external/wpt/css/vendor-imports/mozilla/mozilla-c
 # Sheriff 2018-08-31
 crbug.com/879728 external/wpt/payment-handler/idlharness.https.any.serviceworker.html [ Pass Failure ]
 crbug.com/879728 external/wpt/push-api/idlharness.https.any.serviceworker.html [ Pass Failure ]
+
+# Sheriff 2018-09-03
+crbug.com/698165 external/wpt/editing/run/justifyright.html [ Timeout Pass ]

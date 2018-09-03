@@ -1443,7 +1443,6 @@ enum WebFeature {
   kMediaStreamConstraintsGoogAudioMirroring = 1957,
   kMediaStreamConstraintsGoogDAEchoCancellation = 1958,
   kMediaStreamConstraintsGoogNoiseReduction = 1959,
-  kMediaStreamConstraintsGoogPowerLineFrequency = 1960,
   // The above items are available in M59 branch.
 
   kViewportFixedPositionUnderFilter = 1961,
@@ -1990,6 +1989,8 @@ enum WebFeature {
   kCacheStorageAddAllSuccessWithDuplicate = 2534,
   kLegendDelegateFocusOrAccessKey = 2535,
   kFeaturePolicyReport = 2536,
+  kV8Window_WebkitRTCPeerConnection_ConstructorGetter = 2537,
+  kV8Window_WebkitMediaStream_ConstructorGetter = 2538,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

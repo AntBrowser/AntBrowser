@@ -466,7 +466,7 @@ AtomicString Element::LowercaseIfNecessary(const AtomicString& name) const {
 }
 
 const AtomicString& Element::nonce() const {
-  return HasRareData() ? GetElementRareData()->GetNonce() : g_empty_atom;
+  return HasRareData() ? GetElementRareData()->GetNonce() : g_null_atom;
 }
 
 void Element::setNonce(const AtomicString& nonce) {
@@ -3881,7 +3881,7 @@ const ComputedStyle* Element::EnsureComputedStyle(
   if (!pseudo_element_specifier)
     return element_style;
 
-  if (ComputedStyle* pseudo_element_style =
+  if (const ComputedStyle* pseudo_element_style =
           element_style->GetCachedPseudoStyle(pseudo_element_specifier))
     return pseudo_element_style;
 
@@ -4139,7 +4139,7 @@ LayoutObject* Element::PseudoElementLayoutObject(PseudoId pseudo_id) const {
   return nullptr;
 }
 
-ComputedStyle* Element::CachedStyleForPseudoElement(
+const ComputedStyle* Element::CachedStyleForPseudoElement(
     const PseudoStyleRequest& request,
     const ComputedStyle* parent_style) {
   ComputedStyle* style = MutableComputedStyle();
@@ -4149,7 +4149,8 @@ ComputedStyle* Element::CachedStyleForPseudoElement(
     return nullptr;
   }
 
-  if (ComputedStyle* cached = style->GetCachedPseudoStyle(request.pseudo_id))
+  if (const ComputedStyle* cached =
+          style->GetCachedPseudoStyle(request.pseudo_id))
     return cached;
 
   scoped_refptr<ComputedStyle> result =
